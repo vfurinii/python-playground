@@ -42,15 +42,29 @@ class InstagramFollowersChecker:
 
         if isinstance(data, list):
             for item in data:
+                # Formato: [{"title": "username", "string_list_data": [...]}]
+                # Este é o formato do following.json
+                if "title" in item and item["title"]:
+                    usernames.add(item["title"])
+
                 # Formato: [{"string_list_data": [{"value": "username"}]}]
+                # Este é o formato do followers_1.json
                 if "string_list_data" in item:
                     for string_data in item["string_list_data"]:
                         if "value" in string_data:
                             usernames.add(string_data["value"])
                         elif "href" in string_data:
                             # Extrai username da URL
-                            username = string_data["href"].split("/")[-2]
-                            usernames.add(username)
+                            href = string_data["href"]
+                            if "/_u/" in href:
+                                # Formato: https://www.instagram.com/_u/username
+                                username = href.split("/_u/")[-1]
+                                usernames.add(username)
+                            else:
+                                # Formato: https://www.instagram.com/username/
+                                username = href.rstrip('/').split("/")[-1]
+                                if username and username != "www.instagram.com":
+                                    usernames.add(username)
 
                 # Formato direto: [{"username": "user"}]
                 elif "username" in item:
