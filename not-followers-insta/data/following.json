@@ -1,0 +1,95 @@
+{
+  "relationships_following": [
+    {
+      "title": "alice_wonder",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/alice_wonder",
+          "timestamp": 1700000000
+        }
+      ]
+    },
+    {
+      "title": "bob_builder",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/bob_builder",
+          "timestamp": 1700000100
+        }
+      ]
+    },
+    {
+      "title": "charlie_photos",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/charlie_photos",
+          "timestamp": 1700000200
+        }
+      ]
+    },
+    {
+      "title": "diana_travels",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/diana_travels",
+          "timestamp": 1700000300
+        }
+      ]
+    },
+    {
+      "title": "emma_art",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/emma_art",
+          "timestamp": 1700000400
+        }
+      ]
+    },
+    {
+      "title": "paul_programmer",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/paul_programmer",
+          "timestamp": 1700000500
+        }
+      ]
+    },
+    {
+      "title": "quinn_quotes",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/quinn_quotes",
+          "timestamp": 1700000600
+        }
+      ]
+    },
+    {
+      "title": "ryan_racing",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/ryan_racing",
+          "timestamp": 1700000700
+        }
+      ]
+    },
+    {
+      "title": "sara_sports",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/sara_sports",
+          "timestamp": 1700000800
+        }
+      ]
+    },
+    {
+      "title": "tom_tech",
+      "string_list_data": [
+        {
+          "href": "https://www.instagram.com/_u/tom_tech",
+          "timestamp": 1700000900
+        }
+      ]
+    }
+  ]
+}
+
