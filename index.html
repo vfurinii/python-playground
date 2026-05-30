@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda do Vicenzo</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Segoe UI, sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    padding:30px;
+    color:#333;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+.card{
+    background:white;
+    border-radius:16px;
+    padding:24px;
+    margin-bottom:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+h1{
+    margin-bottom:10px;
+}
+
+.info{
+    color:#666;
+    margin-bottom:20px;
+}
+
+.buttons{
+    display:flex;
+    gap:10px;
+}
+
+button{
+    border:none;
+    padding:12px 24px;
+    border-radius:10px;
+    cursor:pointer;
+    color:white;
+    font-weight:bold;
+}
+
+.sim{
+    background:#22c55e;
+}
+
+.nao{
+    background:#ef4444;
+}
+
+.resultado{
+    margin-top:20px;
+    padding:16px;
+    border-radius:12px;
+    display:none;
+}
+
+.success{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.calendar-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:20px;
+}
+
+.month{
+    background:white;
+    padding:15px;
+    border-radius:16px;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
+}
+
+.month-title{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:12px;
+}
+
+.weekdays,
+.days{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+}
+
+.weekdays div{
+    text-align:center;
+    font-size:12px;
+    margin-bottom:5px;
+    color:#666;
+}
+
+.day{
+    height:40px;
+    margin:2px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+}
+
+.normal{
+    background:#eceff3;
+}
+
+.vicenzo{
+    background:#22c55e;
+    color:white;
+    font-weight:bold;
+}
+
+.today-weekend{
+    border:3px solid #3b82f6;
+}
+
+.proximo{
+    border:3px solid #f59e0b;
+}
+
+.lista{
+    margin-top:15px;
+}
+
+.lista li{
+    margin-bottom:6px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="card">
+    <h1>📅 Agenda do Vicenzo</h1>
+
+    <div id="hoje" class="info"></div>
+
+    <div id="pergunta"></div>
+
+    <div class="buttons">
+        <button class="sim" onclick="processar(true)">Sim</button>
+        <button class="nao" onclick="processar(false)">Não</button>
+    </div>
+
+    <div id="resultado" class="resultado"></div>
+</div>
+
+<div class="card">
+    <h2>📋 Próximos finais de semana com Vicenzo</h2>
+    <ul id="listaDatas" class="lista"></ul>
+</div>
+
+<div id="calendarios" class="calendar-grid"></div>
+
+</div>
+
+<script>
+
+const meses = [
+"Janeiro","Fevereiro","Março","Abril",
+"Maio","Junho","Julho","Agosto",
+"Setembro","Outubro","Novembro","Dezembro"
+];
+
+const diasSemana = [
+"Domingo","Segunda-feira","Terça-feira",
+"Quarta-feira","Quinta-feira",
+"Sexta-feira","Sábado"
+];
+
+const hoje = new Date();
+
+const isWeekend =
+    hoje.getDay() === 0 ||
+    hoje.getDay() === 6;
+
+document.getElementById("hoje").innerHTML =
+    `Hoje é ${diasSemana[hoje.getDay()]},
+    ${hoje.toLocaleDateString("pt-BR")}`;
+
+document.getElementById("pergunta").innerHTML =
+    isWeekend
+        ? "<p>Vicenzo está com vocês neste final de semana?</p>"
+        : "<p>Vicenzo esteve com vocês no último final de semana?</p>";
+
+function processar(estavaComVoces){
+
+    localStorage.setItem(
+        "vicenzoStatus",
+        JSON.stringify({
+            valor: estavaComVoces,
+            data: new Date()
+        })
+    );
+
+    gerarAgenda(estavaComVoces);
+}
+
+function gerarAgenda(estavaComVoces){
+
+    const resultado =
+        document.getElementById("resultado");
+
+    resultado.style.display = "block";
+    resultado.className =
+        "resultado success";
+
+    const proximoFimSemana =
+        getNextSaturday(new Date());
+
+    const estaraNoProximo =
+        !estavaComVoces;
+
+    resultado.innerHTML =
+        estaraNoProximo
+            ? `✅ Vicenzo estará com vocês no próximo final de semana (${formatarData(proximoFimSemana)}).`
+            : `❌ Vicenzo não estará com vocês no próximo final de semana (${formatarData(proximoFimSemana)}).`;
+
+    gerarCalendario(estaraNoProximo,
+                    proximoFimSemana);
+
+}
+
+function gerarCalendario(
+    estaraNoProximo,
+    primeiroSabado
+){
+
+    const lista =
+        document.getElementById("listaDatas");
+
+    lista.innerHTML = "";
+
+    const container =
+        document.getElementById("calendarios");
+
+    container.innerHTML = "";
+
+    let finaisSemana = [];
+
+    let sabadoBase =
+        new Date(primeiroSabado);
+
+    if(!estaraNoProximo){
+        sabadoBase.setDate(
+            sabadoBase.getDate()+14
+        );
+    }
+
+    for(let i=0;i<13;i++){
+
+        const sabado =
+            new Date(sabadoBase);
+
+        sabado.setDate(
+            sabado.getDate() + (i*14)
+        );
+
+        const domingo =
+            new Date(sabado);
+
+        domingo.setDate(
+            domingo.getDate()+1
+        );
+
+        finaisSemana.push(
+            formatDate(sabado)
+        );
+
+        finaisSemana.push(
+            formatDate(domingo)
+        );
+
+        const li =
+            document.createElement("li");
+
+        li.innerHTML =
+            `${formatarData(sabado)}
+             até
+             ${formatarData(domingo)}`;
+
+        lista.appendChild(li);
+    }
+
+    const hoje = new Date();
+
+    for(let m=0;m<6;m++){
+
+        const dataMes =
+            new Date(
+                hoje.getFullYear(),
+                hoje.getMonth()+m,
+                1
+            );
+
+        const ano =
+            dataMes.getFullYear();
+
+        const mes =
+            dataMes.getMonth();
+
+        const diasMes =
+            new Date(
+                ano,
+                mes+1,
+                0
+            ).getDate();
+
+        const primeiroDia =
+            new Date(
+                ano,
+                mes,
+                1
+            ).getDay();
+
+        let html =
+        `<div class="month">
+            <div class="month-title">
+                ${meses[mes]} ${ano}
+            </div>
+
+            <div class="weekdays">
+                <div>D</div>
+                <div>S</div>
+                <div>T</div>
+                <div>Q</div>
+                <div>Q</div>
+                <div>S</div>
+                <div>S</div>
+            </div>
+
+            <div class="days">`;
+
+        for(let i=0;i<primeiroDia;i++){
+            html += "<div></div>";
+        }
+
+        for(let dia=1;dia<=diasMes;dia++){
+
+            const data =
+                new Date(
+                    ano,
+                    mes,
+                    dia
+                );
+
+            let classe =
+                "day normal";
+
+            const dataStr =
+                formatDate(data);
+
+            if(
+                finaisSemana.includes(dataStr)
+            ){
+                classe =
+                    "day vicenzo";
+            }
+
+            html +=
+            `<div class="${classe}">
+                ${dia}
+            </div>`;
+        }
+
+        html += `
+            </div>
+        </div>`;
+
+        container.innerHTML += html;
+    }
+}
+
+function getNextSaturday(date){
+
+    const d = new Date(date);
+
+    while(d.getDay() !== 6){
+        d.setDate(
+            d.getDate()+1
+        );
+    }
+
+    return d;
+}
+
+function formatDate(date){
+    return date
+        .toISOString()
+        .split('T')[0];
+}
+
+function formatarData(date){
+    return date
+        .toLocaleDateString('pt-BR');
+}
+
+const salvo =
+    localStorage.getItem(
+        "vicenzoStatus"
+    );
+
+if(salvo){
+
+    const dados =
+        JSON.parse(salvo);
+
+    gerarAgenda(dados.valor);
+}
+
+</script>
+
+</body>
+</html>
