@@ -189,8 +189,38 @@ const diasSemana = [
 const hoje = new Date();
 
 const isWeekend =
-    hoje.getDay() === 0 ||
-    hoje.getDay() === 6;
+    hoje.getDay() === 5 ||
+    hoje.getDay() === 6 ||
+    hoje.getDay() === 0;
+
+const dataHoje =
+    formatDate(hoje);
+
+function limparResultado(){
+    const resultado =
+        document.getElementById("resultado");
+
+    resultado.style.display = "none";
+    resultado.className = "resultado";
+    resultado.innerHTML = "";
+}
+
+function salvarEstado(estavaComVoces){
+    localStorage.setItem(
+        "vicenzoStatus",
+        JSON.stringify({
+            valor: estavaComVoces,
+            data: dataHoje,
+            contexto: isWeekend ? "fim-de-semana" : "dia-util"
+        })
+    );
+}
+
+function estadoEhValido(dados){
+    return dados
+        && dados.data === dataHoje
+        && dados.contexto === (isWeekend ? "fim-de-semana" : "dia-util");
+}
 
 document.getElementById("hoje").innerHTML =
     `Hoje é ${diasSemana[hoje.getDay()]},
@@ -203,13 +233,9 @@ document.getElementById("pergunta").innerHTML =
 
 function processar(estavaComVoces){
 
-    localStorage.setItem(
-        "vicenzoStatus",
-        JSON.stringify({
-            valor: estavaComVoces,
-            data: new Date()
-        })
-    );
+    limparResultado();
+    localStorage.removeItem("vicenzoStatus");
+    salvarEstado(estavaComVoces);
 
     gerarAgenda(estavaComVoces);
 }
@@ -219,16 +245,17 @@ function gerarAgenda(estavaComVoces){
     const resultado =
         document.getElementById("resultado");
 
-    resultado.style.display = "block";
-    resultado.className =
-        "resultado success";
-
     const proximoFimSemana =
         getNextSaturday(new Date());
 
     const estaraNoProximo =
         !estavaComVoces;
 
+    resultado.style.display = "block";
+    resultado.className =
+        estaraNoProximo
+            ? "resultado success"
+            : "resultado";
     resultado.innerHTML =
         estaraNoProximo
             ? `✅ Vicenzo estará com vocês no próximo final de semana (${formatarData(proximoFimSemana)}).`
@@ -403,9 +430,11 @@ function getNextSaturday(date){
 }
 
 function formatDate(date){
-    return date
-        .toISOString()
-        .split('T')[0];
+    const ano = date.getFullYear();
+    const mes = String(date.getMonth() + 1).padStart(2, "0");
+    const dia = String(date.getDate()).padStart(2, "0");
+
+    return `${ano}-${mes}-${dia}`;
 }
 
 function formatarData(date){
@@ -423,7 +452,11 @@ if(salvo){
     const dados =
         JSON.parse(salvo);
 
-    gerarAgenda(dados.valor);
+    if(estadoEhValido(dados)){
+        gerarAgenda(dados.valor);
+    }else{
+        localStorage.removeItem("vicenzoStatus");
+    }
 }
 
 </script>
